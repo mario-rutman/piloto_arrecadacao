@@ -35,8 +35,17 @@ graf_01 <- arrec_ger_17_a_20_processada %>%
   mutate(variacao_percentual = 
     round((total_ate_agosto[4]-total_ate_agosto)*100/total_ate_agosto[4], 1))
 
-tot_2020 <- arrec_ger_17_a_20_processada %>% filter(ano == 2020) %>% 
-group_by(tipo_de_arrecadacao) %>% summarise(val_por_trib = sum(valor, na.rm = TRUE)/1e9)
+# Calculando o total em 2020 e o total só de ICMS.
+tot_2020 <- arrec_ger_17_a_20_processada %>% 
+  filter(ano == 2020) %>% 
+  summarise(tot = sum(valor/1e9, na.rm = TRUE)) %>% 
+  pull(tot)
+
+tot_ICMS_2020 <- arrec_ger_17_a_20_processada %>% 
+  filter(ano == 2020 & tipo_de_arrecadacao == "ICMS") %>%
+  summarise(tot_ICMS = sum(valor/1e9, na.rm = TRUE)) %>%
+  pull(tot_ICMS)
+
 
 # Baixando a fonte Ubuntu.
 library(showtext)
@@ -57,8 +66,6 @@ font <- "ubuntu"
 
 >#### Apesar da grave crise econômica causada pela pandemia, até agosto, a arrecadação de 2020 foi pouco abaixo (aprox. 5,3%) da de 2018 e 19.
 
-###### __Obs.__ Toda análise foi feita com valores históricos.
-
 ```{r, echo=FALSE, fig.height=3, fig.width=9}
 
 ggplot(graf_01, aes(x = ano, y = total_ate_agosto)) +
@@ -68,7 +75,7 @@ ggplot(graf_01, aes(x = ano, y = total_ate_agosto)) +
                 hjust = 0, size=10, family="ubuntu") +
   geom_hline(yintercept = 0, size = 1, colour="#333333") +
   ylim(0, 32) +
-  labs(caption = "Fonte: CPAA / SUAR / SEFAZ") +
+  labs(caption = "Obs. Toda análise foi feita com valores históricos. Fonte: CPAA / SUAR / SEFAZ") +
   ggplot2::theme(
     
     #Text format:
@@ -136,7 +143,6 @@ ggplot(graf_01, aes(x = ano, y = total_ate_agosto)) +
 #### Os gráficos indicam as variações das diferenças (em %) entre 2020 e 17; 2020 e 18; e, 2020 e 19. 
 >#### A partir de ago/set, as linhas dos 3 gráficos são ascendentes, revelam uma reação positiva da arrecadação de 2020 frente aos outros anos (17, 18 e 19).
 
-###### __Obs.__ Toda análise foi feita com valores históricos.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.height=3, fig.width=9}
 
@@ -147,7 +153,7 @@ ggplot(graf_01, aes(x = ano, y = total_ate_agosto)) +
 # Começando o gráfico.
 serie_temp_arrec %>% ggplot(aes(mes, percentual)) + 
   geom_smooth(method = "loess", se = FALSE, size = 2, color = "#dd4814") +
-  labs(caption = "Fonte: CPAA / SUAR / SEFAZ") +
+  labs(caption = "Obs. Toda análise foi feita com valores históricos. Fonte: CPAA / SUAR / SEFAZ") +
   facet_wrap(~ var_percentual, ncol = 3) +
   
    # Aqui os textos estão na mesma altura e lado a lado, vjust iguais.
@@ -235,8 +241,6 @@ serie_temp_arrec %>% ggplot(aes(mes, percentual)) +
 
 #### Em 'Search:' escreva o tipo de arrecadação que deseja comparar.
 
-###### __Obs.__ Toda análise foi feita com valores históricos.
-
 ```{r, echo=FALSE, message=FALSE, fig.height=3, fig.width=9}
 
 ty <- arrec_ger_17_a_20_processada %>% filter(mes < 9) %>% 
@@ -251,7 +255,7 @@ dp <- arrec_ger_17_a_20_processada %>% filter(mes < 9) %>%
   ungroup() 
 
 inner_join(ty, dp) %>% mutate(delta_percentual = (var_temp - total)/var_temp) %>% select(c(1,2,3,5)) %>% 
-   datatable(filter = 'none', caption = "Fonte: CPAA / SUAR / SEFAZ",
+   datatable(filter = 'none', caption = "Obs. Toda análise foi feita com valores históricos. Fonte: CPAA / SUAR / SEFAZ",
               rownames = FALSE, class = 'cell-border stripe',
               colnames = c('Ano', 'Tipo de arrecadação', 
                            'Valor (em bilhões de R$', 'Diferença %'),
@@ -271,9 +275,8 @@ inner_join(ty, dp) %>% mutate(delta_percentual = (var_temp - total)/var_temp) %>
 ### __Arrecadação por tributo__.
 #### O gráfico mostra a arrecadação até agosto de 2020 em valores absolutos (em bilhões de R$) e relativos.
 
-#### A arrecadação com ICMS é 3,5 vezes maior que o total das restantes.
+#### A arrecadação com ICMS é `r prettyNum(round(tot_ICMS_2020/(tot_2020 - tot_ICMS_2020),1), decimal.mark = ",")` vezes maior que o total das restantes.
 
-###### __Obs.__ Toda análise foi feita com valores históricos.
 
 ```{r, echo=FALSE, message=FALSE, fig.height=3, fig.width=9}
 
@@ -293,7 +296,7 @@ arrec_ger_17_a_20_processada %>% #Considerando apenas 2020.
   geom_hline(yintercept = 0, size = 1, colour="#333333") +
   ylim(0, 28) +
   scale_x_discrete(labels=c("Dívida Ativa" = "Dív. Ativ.")) +
-  labs(caption = "Fonte: CPAA / SUAR / SEFAZ") +
+  labs(caption = "Obs. Toda análise foi feita com valores históricos. Fonte: CPAA / SUAR / SEFAZ") +
   
   theme(
     
